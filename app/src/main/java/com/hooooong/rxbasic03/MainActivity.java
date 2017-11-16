@@ -13,6 +13,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.subjects.AsyncSubject;
 import io.reactivex.subjects.BehaviorSubject;
@@ -116,6 +117,8 @@ public class MainActivity extends AppCompatActivity {
     public void doReplay(View view) {
         new Thread(() -> {
             for (int i = 0; i < 10; i++) {
+                Observable<String> observable = Observable.create(str -> str.onNext("뿌잉"));
+                observable.subscribe(str -> replaySubject.onNext(str));
                 replaySubject.onNext("SomeThings : " + i);
                 Log.e(TAG, "doReplay: "+ i);
                 try {
@@ -127,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
+    //구독(subscribe)을 한 시점에 상관없이 모든 데이터를 읽을 수 있다.
     public void getReplay(View view) {
         dataList.clear();
         replaySubject
@@ -141,18 +145,19 @@ public class MainActivity extends AppCompatActivity {
     // Async Subject 생성
     AsyncSubject<String> asyncSubject = AsyncSubject.create();
 
+    // 구독을 하면 마지막 아이템을 구독하고 observable 의 동작이 완료된 후에야 동작한다.
     public void doAsync(View view) {
         new Thread(() -> {
             for (int i = 0; i < 10; i++) {
-                asyncSubject.onNext("SomeThings : " + i);
+                asyncSubject.onNext("Something : " + i);
                 Log.e(TAG, "doAsync: "+ i);
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                asyncSubject.onComplete();
             }
+            asyncSubject.onComplete();
         }).start();
     }
 
